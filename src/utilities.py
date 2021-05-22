@@ -26,24 +26,21 @@ def shadow_checker(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
     return result
 
 
-def eccentric_anomaly_calculator(time, n, tau, e):
+def eccentric_anomaly_calculator(mean_anomaly, e):
     # Compute E using Newton-Raphson
     # Input:
-    # time, [sec]
-    # n, mean motion [rad/sec]
-    # tau, time of pericenter [sec]
+    # mean_anomaly, [rad]
     # e, eccentricity []
     # Output
     # E, eccentric anomaly at desired time [rad]
 
-    # Define initial value for E_0
-    M = n * (time - tau)
-    if M <np.pi:
-        E_0 = M - e
+    # Define initial value for E_0)
+    if mean_anomaly <np.pi:
+        E_0 = mean_anomaly - e
     else:
-        E_0 = M + e
+        E_0 = mean_anomaly + e
     # Define f and f dot
-    f = lambda E: M - E + e*np.sin(E)
+    f = lambda E: mean_anomaly - E + e*np.sin(E)
     fdot = lambda E: -1 + e*np.cos(E)
     # Stopping criteria
     N = 15  # Number of significant digits to be computed
@@ -56,11 +53,56 @@ def eccentric_anomaly_calculator(time, n, tau, e):
     while ea > es:
         repetitions = repetitions + 1
         E_next = E_prev - (f(E_prev) / fdot(E_prev))
-        # if E_next == 0:
-        #     return E_next
+        if E_next == 0:
+            return E_next
         ea = np.fabs((E_next - E_prev) * 100 / E_next)
         E_prev = E_next
         if repetitions > max_repetitions:
             raise StopIteration("Max repetitions reached without achieving desired accuracy for E!")
     E = E_next
     return E
+
+
+def orbital_elements_to_cartesian(a, e, i, Omega, omega, M, mu):
+    # Computes cartesian position and velocity vector given some orbital elements
+    # Input:
+    # a [m]
+    # e []
+    # i [deg]
+    # Omega [deg]
+    # omega [deg]
+    # M [deg]
+    # mu [m^3/(kg*s^2)] (GM)
+    # Output:
+    # r_vector, y_vector
+
+    # Convert M to radians
+    M = np.radians(M)
+    # Compute E using Newton-Raphson
+    E = eccentric_anomaly_calculator(M, e)
+    # Compute x, xdot, y, ydot on the orbital plane
+    x = a * (np.cos(E) - e)
+    y = a * np.sqrt(1 - pow(e, 2)) * np.sin(E)
+    r = np.sqrt(pow(x, 2) + pow(y, 2))
+    n = np.sqrt(mu / pow(a, 3))  # Mean motion
+    x_dot = -(n * pow(a, 2) / r) * np.sin(E)
+    y_dot = (n * pow(a, 2) / r) * np.sqrt(1 - pow(e, 2)) * np.cos(E)
+    # Rotation Matrices definition
+    Omega = np.radians(Omega)
+    omega = np.radians(omega)
+    i = np.radians(i)
+    P1 = np.array([[np.cos(omega), -np.sin(omega), 0],
+                   [np.sin(omega), np.cos(omega), 0],
+                   [0, 0, 1]])
+    P2 = np.array([[1, 0, 0],
+                   [0, np.cos(i), np.sin(i)],
+                   [0, np.sin(i), np.cos(i)]])
+    P3 = np.array([[np.cos(Omega), -np.sin(Omega), 0],
+                   [np.sin(Omega), np.cos(Omega), 0],
+                   [0, 0, 1]])
+    # Compute cartesian coordinates
+    x_y_vector = np.array([x, y, 0])
+    x_y_dot_vector = np.array([x_dot, y_dot, 0])
+    r_vector = np.matmul(np.matmul(np.matmul(P3, P2), P1), x_y_vector)
+    v_vector = np.matmul(np.matmul(np.matmul(P3, P2), P1), x_y_dot_vector)
+    return r_vector, v_vector
