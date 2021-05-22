@@ -37,9 +37,9 @@ x_sc_vector, y_sc_vector, z_sc_vector, vx_sc_vector, vy_sc_vector, vz_sc_vector,
     propagators.runge_kutta_4(x, y, z, vx, vy, vz, mu_earth, start_time, end_time, time_step)
 
 # Compute sun position
-x_sun_vector = [149597870700.0]
-y_sun_vector = [0.0]
-z_sun_vector = [0.0]
+x_sun_vector = [139861683376.804]
+y_sun_vector = [2359460644.848]
+z_sun_vector = [59677952894.078]
 counter = 0
 for time in trange(start_time, end_time, time_step, desc="Sun position"):
     x_sun, y_sun = utilities.sun_position_calculator(x_sun_vector[counter], y_sun_vector[counter], time)
@@ -49,11 +49,11 @@ for time in trange(start_time, end_time, time_step, desc="Sun position"):
     counter += 1
 
 # Solar panel area definition
-solar_panel_area = 0.0210
-solar_panel_efficiency = 0.275
+solar_panel_area = 0.021049
+solar_panel_efficiency = 0.284
 
 # Compute generated power
-solar_flux = 1358
+solar_flux = 1367
 power = [0] * np.size(t_vector)
 for i in trange(0, np.size(t_vector), desc="Power"):
     sunlight = utilities.shadow_checker(x_sc_vector[i], y_sc_vector[i], z_sc_vector[i], x_sun_vector[i],
