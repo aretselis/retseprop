@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 def runge_kutta_4(x_0, y_0, z_0, vx_0, vy_0, vz_0, mu, t_start, t_end, h):
     # 4th order Runge Kutta orbit propagator with no perturbations
     # Input:
@@ -19,6 +21,7 @@ def runge_kutta_4(x_0, y_0, z_0, vx_0, vy_0, vz_0, mu, t_start, t_end, h):
     vzn = [vz_0]
     counter = 0
     # Main RK4 loop
+    progress_bar = tqdm(total=t_end, desc="Propagation")
     while tn[counter] < t_end:
         # Calculate k1 values
         k1_x = fx(vx_0)
@@ -85,6 +88,8 @@ def runge_kutta_4(x_0, y_0, z_0, vx_0, vy_0, vz_0, mu, t_start, t_end, h):
         vx_0 = vxn[counter]
         vy_0 = vyn[counter]
         vz_0 = vzn[counter]
+        progress_bar.update(tn[counter] - progress_bar.n)
+    progress_bar.close()
     return xn, yn, zn, vxn, vyn, vzn, tn
 
 
