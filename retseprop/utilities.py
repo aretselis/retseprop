@@ -24,3 +24,43 @@ def shadow_checker(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
     else:
         result = 1
     return result
+
+
+def eccentric_anomaly_calculator(time, n, tau, e):
+    # Compute E using Newton-Raphson
+    # Input:
+    # time, [sec]
+    # n, mean motion [rad/sec]
+    # tau, time of pericenter [sec]
+    # e, eccentricity []
+    # Output
+    # E, eccentric anomaly at desired time [rad]
+
+    # Define initial value for E_0
+    M = n * (time - tau)
+    if M <np.pi:
+        E_0 = M - e
+    else:
+        E_0 = M + e
+    # Define f and f dot
+    f = lambda E: M - E + e*np.sin(E)
+    fdot = lambda E: -1 + e*np.cos(E)
+    # Stopping criteria
+    N = 15  # Number of significant digits to be computed
+    max_repetitions = 1000000
+    es = 0.5 * pow(10, (2 - N))  # Scarborough Criterion
+    ea = 100
+    E_prev = E_0
+    repetitions = 0
+    # Main Newton-Raphson loop
+    while ea > es:
+        repetitions = repetitions + 1
+        E_next = E_prev - (f(E_prev) / fdot(E_prev))
+        # if E_next == 0:
+        #     return E_next
+        ea = np.fabs((E_next - E_prev) * 100 / E_next)
+        E_prev = E_next
+        if repetitions > max_repetitions:
+            raise StopIteration("Max repetitions reached without achieving desired accuracy for E!")
+    E = E_next
+    return E
