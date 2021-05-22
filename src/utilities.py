@@ -106,3 +106,17 @@ def orbital_elements_to_cartesian(a, e, i, Omega, omega, M, mu):
     r_vector = np.matmul(np.matmul(np.matmul(P3, P2), P1), x_y_vector)
     v_vector = np.matmul(np.matmul(np.matmul(P3, P2), P1), x_y_dot_vector)
     return r_vector, v_vector
+
+
+def sun_position_calculator(x_initial, y_initial, propagation_time):
+    # Rotates the sun around the earth in the ICRF frame
+    # Input is the initial position vector of the sun [meters] and propagation time [seconds]
+    # Output is the position vector of the sun [meters] after propagation
+    n_dot = 1  # [deg/day]
+    propagation_time = propagation_time / (60 * 60 * 24)
+    theta = n_dot*propagation_time
+    theta = np.radians(theta)
+    r = np.sqrt(pow(x_initial, 2) + pow(y_initial, 2))
+    x_final = r*np.cos(theta)
+    y_final = r*np.sin(theta)
+    return x_final, y_final
