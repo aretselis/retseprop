@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def shadow_checker(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
-    # Computes if a spacecraft is inside a planet's shadow
+def simple_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
+    # Computes if a spacecraft is inside a planet's umbra or sunlit region
     # Based on the Traditional Shadow Analysis presented in Vallado (2013)
     # Input:
     # Spacecraft position vector (x_sc, y_sc, z_sc) [meters]
@@ -24,6 +24,44 @@ def shadow_checker(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
     else:
         result = 1
     return result
+
+
+def advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
+    # Computes if a spacecraft is in umbra, penumbra or sunlit region of an orbit
+    # Based on the Geometrical Shadow Analysis presented in Vallado (2013)
+    # Input:
+    # Spacecraft position vector (x_sc, y_sc, z_sc) [meters]
+    # Sun position vector (x_sun, y_sun, z_sun) [meters]
+    # Output:
+    # 0, if the spacecraft is in planet's shadow (umbra)
+    # 1, if the spacecraft is in sunlight
+    # 2, if the spacecraft is in the penumbra region
+
+    # Compute basic umbra angles
+    a_umbra = 0.264121687       # [deg]
+    a_penumbra = 0.269007205    # [deg]
+    a_umbra = np.radians(a_umbra)
+    a_penumbra = np.radians(a_penumbra)
+    # Initially assume we are in sunlight, compute magnitudes and dot product
+    shadow = 1
+    r_sc_magnitude = pow(pow(x_sc, 2) + pow(y_sc, 2) + pow(z_sc, 2), 1/2)
+    r_sun_magnitude = pow(pow(x_sun, 2) + pow(y_sun, 2) + pow(z_sun, 2), 1/2)
+    dot_product = x_sc*x_sun + y_sc*y_sun + z_sc*z_sun
+    # Decide if we should evaluate umbra/penumbra possibility
+    if dot_product < 0:
+        dot_product = -x_sc * x_sun - y_sc * y_sun - z_sc * z_sun
+        angle_s = np.arccos(dot_product/(r_sc_magnitude*r_sun_magnitude))
+        sat_horiz = r_sc_magnitude*np.cos(angle_s)
+        sat_vert = r_sc_magnitude*np.sin(angle_s)
+        x = planet_radius/np.sin(a_penumbra)
+        pen_vert = np.tan(a_penumbra)*(x+sat_horiz)
+        if sat_vert <= pen_vert:
+            shadow = 2
+            y = planet_radius/np.sin(a_umbra)
+            umb_vertical = np.tan(a_umbra)*(y-sat_horiz)
+            if sat_vert <= umb_vertical:
+                shadow = 0
+    return shadow
 
 
 def eccentric_anomaly_calculator(mean_anomaly, e):
