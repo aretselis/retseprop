@@ -35,7 +35,7 @@ def advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
     # Output:
     # 0, if the spacecraft is in planet's shadow (umbra)
     # 1, if the spacecraft is in sunlight
-    # 2, if the spacecraft is in the penumbra region
+    # value in (0,1), if the spacecraft is in the penumbra region
 
     # Compute basic umbra angles
     a_umbra = 0.264121687       # [deg]
@@ -51,16 +51,20 @@ def advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius):
     if dot_product < 0:
         dot_product = -x_sc * x_sun - y_sc * y_sun - z_sc * z_sun
         angle_s = np.arccos(dot_product/(r_sc_magnitude*r_sun_magnitude))
-        sat_horiz = r_sc_magnitude*np.cos(angle_s)
-        sat_vert = r_sc_magnitude*np.sin(angle_s)
+        sat_horizontal = r_sc_magnitude*np.cos(angle_s)
+        sat_vertical = r_sc_magnitude*np.sin(angle_s)
         x = planet_radius/np.sin(a_penumbra)
-        pen_vert = np.tan(a_penumbra)*(x+sat_horiz)
-        if sat_vert <= pen_vert:
-            shadow = 2
+        pen_vertical = np.tan(a_penumbra)*(x+sat_horizontal)
+        if sat_vertical <= pen_vertical:
             y = planet_radius/np.sin(a_umbra)
-            umb_vertical = np.tan(a_umbra)*(y-sat_horiz)
-            if sat_vert <= umb_vertical:
+            umb_vertical = np.tan(a_umbra)*(y-sat_horizontal)
+            if sat_vertical <= umb_vertical:
                 shadow = 0
+            else:
+                # Assume that Solar Intensity decreases linearly, calculate shadow value
+                slope = (1-0)/(pen_vertical-umb_vertical)
+                sat_vertical = sat_vertical - umb_vertical
+                shadow = slope*sat_vertical
     return shadow
 
 
