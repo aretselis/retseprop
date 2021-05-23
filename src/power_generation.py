@@ -56,9 +56,9 @@ solar_panel_efficiency = 0.284
 solar_flux = 1367
 power = [0] * np.size(t_vector)
 for i in trange(0, np.size(t_vector), desc="Power"):
-    sunlight = utilities.shadow_checker(x_sc_vector[i], y_sc_vector[i], z_sc_vector[i], x_sun_vector[i],
-                                        y_sun_vector[i], z_sun_vector[i], R_earth)
-    power[i] = sunlight*solar_flux*solar_panel_area*solar_panel_efficiency
+    sunlight = utilities.advanced_shadow_check(x_sc_vector[i], y_sc_vector[i], z_sc_vector[i], x_sun_vector[i],
+                                               y_sun_vector[i], z_sun_vector[i], R_earth)
+    power[i] = sunlight * solar_flux * solar_panel_area * solar_panel_efficiency
 
 # Plot results
 plt.figure()
