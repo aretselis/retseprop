@@ -1,3 +1,5 @@
+using .Constants
+
 function simple_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius)
     #=
     Computes if a spacecraft is inside a planet's umbra or sunlit region
@@ -24,7 +26,7 @@ function simple_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radiu
         result = 1
     end
     return result
-end
+    end
 
 function advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius)
     #=
@@ -69,7 +71,7 @@ function advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_rad
         end
     end
     return shadow
-end
+    end
 
 function eccentric_anomaly_calculator(mean_anomaly, e)
     #=
@@ -112,7 +114,7 @@ function eccentric_anomaly_calculator(mean_anomaly, e)
     end
     E = E_next
     return E
-end
+    end
 
 function orbital_elements_to_cartesian(a, e, i, Omega, omega, M, mu)
     #=
@@ -153,7 +155,7 @@ function orbital_elements_to_cartesian(a, e, i, Omega, omega, M, mu)
     r_vector = *(*(*(P3, P2), P1), x_y_vector)
     v_vector = *(*(*(P3, P2), P1), x_y_dot_vector)
     return r_vector, v_vector
-end 
+    end 
 
 function sun_position_calculator(x_initial, y_initial, propagation_time)
     #=
@@ -168,4 +170,24 @@ function sun_position_calculator(x_initial, y_initial, propagation_time)
     x_final = r*cos(theta)
     y_final = r*sin(theta)
     return x_final, y_final
-end
+    end
+
+
+function inclination_for_circular_sso(altitude, planet_radius=EARTH_RADIUS, planet_mu=EARTH_GRAV_CONST, planet_J2=EARTH_J2, planet_Omega_sun_syn=EARTH_OMEGA_SUN_SYN)
+    #=
+    Computes the inclination for a circular Sun synchronous orbit at a specific altitude
+    Input: 
+    altitude, (Float64), Altitude above the surface of the earth in [km]
+    planet_X values default to the Earth parameters if not defined.
+    planet_radius, (Float64), Radius of the planet in [m]
+    planet_mu, (Float64), Gravitational parameter of the planet (G*M) in [m^3 s^−2]
+    planet_J2, (Float64), 2nd order zonal harmonics coefficient in the gravitational potential expansion in []
+    planet_Omega_sun_syn, (Float64), secular perturbation for RAAN as a result of J2 perurbation for a year in [rad/sec]
+    Output:
+    inclination, (Float64), Inclination value of the desired SSO orbit in [deg]
+    =#
+    altitude = altitude*1000
+    semi_major_axis = planet_radius + altitude
+    inclination = acosd((-2*semi_major_axis^(7/2)*planet_Omega_sun_syn)/(3*planet_radius^(2)*planet_J2*sqrt(planet_mu)))
+    return inclination
+    end
