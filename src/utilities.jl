@@ -1,6 +1,6 @@
 using .Constants
 
-function simple_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius)
+function simple_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius=EARTH_RADIUS)
     #=
     Computes if a spacecraft is inside a planet's umbra or sunlit region
     Based on the Traditional Shadow Analysis presented in Vallado (2013)
@@ -28,7 +28,7 @@ function simple_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radiu
     return result
     end
 
-function advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius)
+function advanced_shadow_check(x_sc, y_sc, z_sc, x_sun, y_sun, z_sun, planet_radius=EARTH_RADIUS)
     #=
     Computes if a spacecraft is in umbra, penumbra or sunlit region of an orbit
     Based on the Geometrical Shadow Analysis presented in Vallado (2013)
@@ -116,7 +116,7 @@ function eccentric_anomaly_calculator(mean_anomaly, e)
     return E
     end
 
-function orbital_elements_to_cartesian(a, e, i, Omega, omega, M, mu)
+function orbital_elements_to_cartesian(a, e, i, Omega, omega, M, mu=EARTH_GRAV_CONST)
     #=
     Computes cartesian position and velocity vector given some orbital elements
     Input:
